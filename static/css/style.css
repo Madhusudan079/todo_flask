@@ -1,3 +1,10 @@
-body{
-    background-color: red;
+/* Higher specificity */
+html body {
+    background-color: dimgray;
+}
+
+/* Reset Bootstrap margins */
+body {
+    margin: 0;
+    padding: 0;
 }
