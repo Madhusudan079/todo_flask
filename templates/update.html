@@ -1,0 +1,26 @@
+{% extends 'base.html' %}
+{% block title %} Home {% endblock title %}
+{% block body %}
+    <div class="container mt-5">
+      <h2>Update Todo List</h2>
+      <!-- Form to Add Todo -->
+      <form action="/update/{{ todo.sNo }}" method="POST">
+        <div class="mb-3">
+          <label for="title" class="form-label">ToDo Title</label>
+          <input type="text" class="form-control" value="{{todo.title}}" id = "title" name="title">
+        </div>
+        <div class="mb-3">
+          <label for="desc" class="form-label">ToDo Description</label>
+          <input type="text" class="form-control" value = "{{todo.desc}}" id="desc" name="desc">
+        </div>
+        <button type="submit" class="btn btn-primary">Update</button>
+      </form>
+    </div>
+    
+    <script
+      src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"
+      integrity="sha384-YvpcrYf0tY3lHB60NNkmXc5s9fDVZLESaAA55NDzOxhy9GkcIdslK1eN7N6jIeHz"
+      crossorigin="anonymous"
+    ></script>
+
+{% endblock body %}
