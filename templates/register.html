@@ -1,0 +1,82 @@
+{% extends 'base.html' %}
+{% block title %}Sign Up{% endblock title %}
+
+{% block body %}
+<div class="container mt-5 d-flex justify-content-center align-items-center" style="min-height: 80vh;">
+    <div class="card shadow-lg" style="width: 100%; max-width: 400px;">
+        <div class="card-body">
+            <h3 class="text-center mb-4">Create an Account</h3>
+            {% if error %}
+            <div class="alert alert-danger" role="alert">
+                {{ error }}
+            </div>                
+            {% endif %}
+            <form method="POST" action="/register">
+                <!-- Name Input -->
+                <div class="form-floating mb-3">
+                    <input
+                        type="text"
+                        class="form-control"
+                        id="name"
+                        name="name"
+                        placeholder="Name"
+                        required
+                    />
+                    <label for="name">Full Name</label>
+                </div>
+
+                <!-- Email Input -->
+                <div class="form-floating mb-3">
+                    <input
+                        type="email"
+                        class="form-control"
+                        id="email"
+                        name="email"
+                        placeholder="name@example.com"
+                        required
+                    />
+                    <label for="email">Email Address</label>
+                </div>
+
+                <!-- Password Input -->
+                <div class="form-floating mb-3">
+                    <input
+                        type="password"
+                        class="form-control"
+                        id="password"
+                        name="password"
+                        placeholder="Password"
+                        required
+                    />
+                    <small class="text-muted">Must include an uppercase letter, lowercase letter, special character, and a number (min 6 characters).</small>
+                    <label for="password">Password</label>
+                </div>
+
+                <!-- Confirm Password Input -->
+                <div class="form-floating mb-3">
+                    <input
+                        type="password"
+                        class="form-control"
+                        id="confirmPassword"
+                        name="confirm_password"
+                        placeholder="Confirm Password"
+                        required
+                    />
+                    <label for="confirmPassword">Confirm Password</label>
+                </div>
+
+                <!-- Submit Button -->
+                <div class="d-grid">
+                    <button class="btn btn-primary" type="submit">Sign Up</button>
+                </div>
+            </form>
+
+            <!-- Additional Actions -->
+            <div class="text-center mt-4">
+                <p>Already have an account?</p>
+                <a href="/login" class="btn btn-outline-primary btn-sm">Login</a>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock body %}

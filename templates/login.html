@@ -1,0 +1,61 @@
+{% extends 'base.html' %} {% block title %}Login{% endblock title %} {% block
+body %}
+<div
+  class="container mt-5 d-flex justify-content-center align-items-center"
+  style="min-height: 80vh"
+>
+  <div class="card shadow-lg" style="width: 100%; max-width: 400px">
+    <div class="card-body">
+      <h3 class="text-center mb-4">Welcome Back</h3>
+      {% if error %}
+      <div class="alert alert-danger" role="alert">{{ error }}</div>
+      {% endif %}
+      <form method="POST" action="/login">
+        <!-- Email Input -->
+        <div class="form-floating mb-3">
+          <input
+            type="email"
+            class="form-control"
+            id="floatingInput"
+            name="email"
+            placeholder="name@example.com"
+            required
+          />
+          <label for="floatingInput">Email Address</label>
+        </div>
+
+        <!-- Password Input -->
+        <div class="form-floating mb-3">
+          <input
+            type="password"
+            class="form-control"
+            id="floatingPassword"
+            name="password"
+            placeholder="Password"
+            required
+          />
+          <label for="floatingPassword">Password</label>
+        </div>
+
+        <!-- Login Button -->
+        <div class="d-grid">
+          <button class="btn btn-primary" type="submit">Login</button>
+        </div>
+      </form>
+
+      <!-- Additional Actions -->
+      <div class="text-center mt-3">
+        <a href="/forgot" class="text-decoration-none">Forgot Password?</a>
+      </div>
+      <hr class="my-4" />
+      <div class="text-center">
+        <p class="mb-1">Don't have an account?</p>
+        <a href="/register" class="btn btn-outline-primary btn-sm">Sign Up</a>
+      </div>
+      <div class="text-center mt-3">
+        <a href="/about" class="text-decoration-none">About</a>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock body %}

@@ -3,8 +3,13 @@
 {% block body %}
     <div class="container mt-5">
       <h2>Todo List</h2>
+      {% if error %}
+      <div class="alert alert-danger" role="alert">
+        {{ error }}
+      </div>
+      {% endif %}
       <!-- Form to Add Todo -->
-      <form action="/" method="POST">
+      <form action="/todos" method="POST">
         <div class="mb-3">
           <label for="title" class="form-label">ToDo Title</label>
           <input type="text" class="form-control" id="title" name="title">
@@ -17,7 +22,7 @@
       </form>
     </div>
     <div class="container mt-5">
-      <h2>Your Todos</h2>
+      <h2>Todo Card</h2>
       {% if alltodo|length == 0 %}
       <div class="alert alert-info" role="alert">
         No tasks added yet. Add a new task above!
@@ -29,7 +34,7 @@
             <th scope="col">Sno</th>
             <th scope="col">Title</th>
             <th scope="col">Description</th>
-            <th scope="col">Time</th>
+            <th scope="col">Date/Time</th>
             <th scope="col">Actions</th>
           </tr>
         </thead>
@@ -48,8 +53,12 @@
           {% endfor %}
         </tbody>
       </table>
+      <button><a href="/logout" class="btn btn-danger">Logout</a></button>
       {% endif %}
     </div>
+    <!-- <div class="container mt-5">
+      <button><a href="/logout" class="btn btn-danger">Logout</a></button>
+    </div> -->
     <script
       src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"
       integrity="sha384-YvpcrYf0tY3lHB60NNkmXc5s9fDVZLESaAA55NDzOxhy9GkcIdslK1eN7N6jIeHz"

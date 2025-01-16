@@ -1,0 +1,166 @@
+Why Google Cloud
+There has never been a more exciting time in technology. We are experiencing one of the most significant shifts in history, where AI is creating entirely new ways to solve problems, engage customers, and work more efficiently. Google Cloud is ready to help organizations build a new way forward in an increasingly AI-driven world.
+
+Contact sales
+Welcome to the new way to cloud
+Want more than the status quo? Only Google Cloud brings together innovations from across Google to help customers digitally transform with AI that’s ready for what’s next, data insights that speed innovation, infrastructure that’s designed to meet industry needs, collaboration tools that help teams do their best work, and security that can proactively stop threats.
+
+Explore the new way
+
+Raise your AI game
+The world is buzzing about generative AI. Now what? Get everyone in your organization learning, building with, and deploying generative AI—all while keeping your data confidential. Kickstart your journey today with enterprise-ready generative AI solutions.
+
+Put your data to work
+Bring the simplicity, scale, security, and intelligence of Google’s information approach to your organization. Google offers a complete data foundation to unify all workloads and manage the entire data life cycle. The solution is designed to run data anywhere, so you can leverage your data across all clouds, on-premises, and access it in the most popular SaaS apps. This solution is built with and for AI, so you can get the latest tools for machine learning analysis, prompting, tuning, training, and deploying custom foundation models—all connected to your business data.
+
+Explore the Data and AI cloud
+900+
+
+Partners and software integrations in our data and AI ecosystem
+
+135
+
+Languages translated in just a few clicks with Translation Hub
+
+90%
+
+Nearly 90% of generative AI unicorns are Google Cloud customers
+
+110+
+
+TB of data per second analyzed by BigQuery customers
+
+Speaker of the video tutorial and presentation slide in one frame
+1:34
+Gemini for Google Cloud: the next frontier in AI-powered developer productivity
+Modernize your infrastructure
+You’re ready for AI, but is your cloud? Google Cloud helps developers build quickly, securely, and cost effectively with the next generation of modern infrastructure designed to meet specific workload and industry needs. Get infrastructure that's optimized for AI, container-based applications, traditional enterprise workloads, and high-performance, distributed workloads—all while helping to cut costs and your carbon footprint.
+
+Explore infrastructure modernization solutions
+Create a culture of innovation
+Empower teams of all sizes to do their best work—anywhere, and across a variety of devices. Google Workspace brings together innovative tools preferred by the modern workforce for collaboration and creation, including Gmail, Google Chat, Google Calendar, Google Drive, Google Docs, Google Sheets, and Google Meet. And, we’ve embedded new, easy-to-use generative AI features to help supercharge team productivity. With more than 3 billion monthly active users, Workspace offers the most popular productivity and collaboration software in the world.
+
+Discover why
+ATB building as video thumbnail
+1:34
+Explore the new era of work
+1,800
+
+Organizations get back to business quickly every year post-breach
+
+40K+
+
+Vulnerabilities found by Google in open source software projects
+
+6M+
+
+Sites protected by reCAPTCHA
+
+9B
+
+Files and URLs analyzed in threat observatory platform VirusTotal
+
+Get built-in security
+Benefit from the same security capabilities that Google uses to keep more people and organizations safe online than anyone else. We help organizations transform their cybersecurity programs with frontline intelligence from Mandiant to understand the latest cyber attacks; a modern security operations platform for detecting, investigating, and responding to threats; and a secure-by-design, secure-by-default infrastructure platform with controls to help maintain digital sovereignty.
+
+Strengthen security with AI
+Work more sustainably
+Decarbonize your digital infrastructure and increase climate resilience with features that help organizations go from ambition to action. Learn about applying technology to key challenges like responsible materials sourcing, climate risk analysis, and sustainable logistics.
+
+Get inspired
+Discover digital transformation stories and curated cloud computing resources.
+
+Seeking green: How focusing on sustainability can build financial resilience
+Read the story
+Are you fluent in prompts and embeddings? A generative AI primer for busy executives
+Read the story
+How to maximize your generative AI investments with cloud FinOps
+Read the story
+Take the next step
+Tell us what you’re solving for. A Google Cloud expert will help you find the best solution.
+
+Contact us
+Work with a trusted partner
+Find a partner
+Start using Google Cloud
+Try it free
+Continue browsing
+See all products
+Google Cloud
+Overview
+Solutions
+Products
+Pricing
+Resources
+Contact Us
+
+Docs
+Support
+Console
+
+Google Developer Profile
+Dashboard
+Saved pages
+Communities and Programs
+Profile
+Google Developers
+Join the Google Developer Program
+Unlock AI tools, exclusive training, and insider access. Join today and accelerate your developer journey.
+Dismiss
+Start
+Start free
+Why Google
+Choosing Google Cloud
+Trust and security
+Modern Infrastructure Cloud
+Multicloud
+Global infrastructure
+Customers and case studies
+Analyst reports
+Whitepapers
+Blog
+Products and pricing
+Google Cloud pricing
+Google Workspace pricing
+See all products
+Solutions
+Infrastructure modernization
+Databases
+Application modernization
+Smart analytics
+Artificial Intelligence
+Security
+Productivity & work transformation
+Industry solutions
+DevOps solutions
+Small business solutions
+See all solutions
+Resources
+Google Cloud Affiliate Program
+Google Cloud documentation
+Google Cloud quickstarts
+Google Cloud Marketplace
+Learn about cloud computing
+Support
+Code samples
+Cloud Architecture Center
+Training
+Certifications
+Google for Developers
+Google Cloud for Startups
+System status
+Release Notes
+Engage
+Contact sales
+Find a Partner
+Become a Partner
+Events
+Podcasts
+Developer Center
+Press Corner
+Google Cloud on YouTube
+Google Cloud Tech on YouTube
+Follow on X
+Join User Research
+We're hiring. Join Google Cloud!
+Google Cloud Community
