@@ -6,12 +6,19 @@
     <div class="card shadow-lg" style="width: 100%; max-width: 400px;">
         <div class="card-body">
             <h3 class="text-center mb-4">Create an Account</h3>
-            {% if error %}
-            <div class="alert alert-danger" role="alert">
-                {{ error }}
-            </div>                
-            {% endif %}
-            <form method="POST" action="/register">
+            
+            <!-- Flash messages for error or success -->
+            {% with messages = get_flashed_messages(with_categories=true) %}
+                {% if messages %}
+                    {% for category, message in messages %}
+                        <div class="alert alert-{{ category }}" role="alert" id="flashMessage">
+                            {{ message }}
+                        </div>
+                    {% endfor %}
+                {% endif %}
+            {% endwith %}
+            
+            <form method="POST" action="/register" id="signupForm">
                 <!-- Name Input -->
                 <div class="form-floating mb-3">
                     <input
@@ -21,6 +28,7 @@
                         name="name"
                         placeholder="Name"
                         required
+                        autocomplete="off"
                     />
                     <label for="name">Full Name</label>
                 </div>
@@ -34,6 +42,7 @@
                         name="email"
                         placeholder="name@example.com"
                         required
+                        autocomplete="off"
                     />
                     <label for="email">Email Address</label>
                 </div>
@@ -47,6 +56,7 @@
                         name="password"
                         placeholder="Password"
                         required
+                        autocomplete="new-password"
                     />
                     <small class="text-muted">Must include an uppercase letter, lowercase letter, special character, and a number (min 6 characters).</small>
                     <label for="password">Password</label>
@@ -61,6 +71,7 @@
                         name="confirm_password"
                         placeholder="Confirm Password"
                         required
+                        autocomplete="new-password"
                     />
                     <label for="confirmPassword">Confirm Password</label>
                 </div>
@@ -79,4 +90,18 @@
         </div>
     </div>
 </div>
+
+<script type="text/javascript">
+    // Function to redirect after a delay
+    window.onload = function() {
+        const flashMessage = document.getElementById("flashMessage"); 
+        if (flashMessage) {
+            // Wait for 2 seconds, then redirect
+            setTimeout(function() {
+                window.location.href = "{{ redirect_url }}";  // Redirect to the login page
+            }, 2000);  // 2 seconds delay before redirect
+        }
+    }
+</script>
+
 {% endblock body %}

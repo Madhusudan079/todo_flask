@@ -1,4 +1,4 @@
-from flask import Flask, render_template, request, redirect, session, url_for
+from flask import  *
 from flask_sqlalchemy import SQLAlchemy
 from datetime import datetime
 from pymongo import MongoClient
@@ -6,11 +6,15 @@ import certifi
 from dotenv import load_dotenv
 import os
 import smtplib
+from flask_wtf import FlaskForm
 from email.mime.text import MIMEText
 from email.mime.multipart import MIMEMultipart
 from itsdangerous import URLSafeTimedSerializer
 import random
+from utils.auth import hash_password, verify_password
 import re
+import time
+
 
 a = ['a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i', 'j', 'k', 'l', 'm', 'n', 'o', 'p', 'q', 'r', 's', 't', 'u', 'v', 'w', 'x', 'y', 'z']
 
@@ -20,6 +24,9 @@ serializer = URLSafeTimedSerializer(SECRET_KEY)
 load_dotenv()
 
 MONGO_URI = os.getenv("MONGO_URI")
+EMAIL_ADDRESS = os.getenv("EMAIL_ADDRESS")
+EMAIL_PASSWORD = os.getenv("EMAIL_PASSWORD")
+
 
 client = MongoClient(MONGO_URI, tlsCAFile=certifi.where())
 db = client['user_auth_db']
@@ -45,9 +52,6 @@ class ToDo(db.Model):
 # Create the database tables
 with app.app_context():
     db.create_all()
-
-EMAIL_ADDRESS = 'madhusudan07.code@gmail.com'
-EMAIL_PASSWORD = 'pnlr bdta shwz atpm'
 
 def generate_reset_token(email):
     return serializer.dumps(email, salt='password-reset-salt')
@@ -98,7 +102,7 @@ def reset_password(token):
         new_password = request.form['password']
 
         # Update the user's password in the database
-        collection.update_one({'email': email}, {'$set': {'password': new_password}})
+        collection.update_one({'email': email}, {'$set': {'password': hash_password(new_password)}})
 
         return redirect('/login')
 
@@ -119,7 +123,7 @@ def forgotpassword():
             return redirect('/login')
             # return 'Password reset link sent'
         else:
-            return 'User not found'
+            return render_template('forgotpassword.html', error="User not found.")
     return render_template('forgotpassword.html')
 
 
@@ -127,23 +131,36 @@ def forgotpassword():
 def register():
     if request.method == 'POST':
         name = request.form['name']
+        if not name or name.isdigit():
+            error = "Name must be a valid string (not numeric or empty)."
+            return render_template('register.html', error=error)
+
         email = request.form['email']
         password = request.form['password']
         confirm_password = request.form['confirm_password']
-        password_regex = r'^(?=.*[A-Z])(?=.*[a-z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{5,}$'
+        
+        password_regex = r'^(?=.*[A-Z])(?=.*[a-z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{6,}$'
         if not re.match(password_regex, password):
             error = "Password must be at least 6 characters long and contain at least one uppercase letter, one lowercase letter, one digit, and one special character"
             return render_template('register.html', error=error)
-        else:
-            if password != confirm_password:
-                error = "Passwords do not match"
-                return render_template('register.html', error=error)
-            user = collection.find_one({'email': email})
+        
+        if password != confirm_password:
+            error = "Passwords do not match"
+            return render_template('register.html', error=error)
+
+        # Check if user already exists
+        user = collection.find_one({'email': email})
         if user:
             error = "User already exists"
             return render_template('register.html', error=error)
-        collection.insert_one({'name': name, 'email': email, 'password': password, 'confirm_password': confirm_password})
-        return redirect('/login')
+        
+        # Hash the password and save the user
+        hashed_password = hash_password(password)
+        collection.insert_one({'name': name, 'email': email, 'password': hashed_password, 'confirm_password': confirm_password})
+        flash('User registered successfully', 'success')
+        
+        return render_template('register.html', redirect_url='/login')
+    
     return render_template('register.html')
 
 @app.route('/about')
@@ -155,12 +172,16 @@ def login():
     if request.method == 'POST':
         email = request.form['email']
         password = request.form['password']
-        user = collection.find_one({'email': email, 'password': password})
+        
+        # Check if user exists
+        user = collection.find_one({'email': email})
+        if user and verify_password(user['password'], password):
+            session['user'] = email
+            return redirect('/todos/1')
+        
         error = "Invalid email or password"
-        if user:
-            session['user'] = email  # Store user email in session
-            return redirect('/todos')
         return render_template('login.html', error=error)
+    
     return render_template('login.html')
 
 def login_required(func):
@@ -174,28 +195,41 @@ def login_required(func):
 
 @app.route('/goback')
 def goback():
-    return redirect('/todos')
+    return redirect('/login')
 
-@app.route('/todos', methods=['GET', 'POST'])
-@login_required  # Protect this route
-def todos():
-    error = None  # Initialize error to None
+@app.route('/todos/<int:page>', methods=['GET', 'POST'])
+@login_required
+def todos(page=1):
+    error = None
+    todos_per_page = 10
+
     if request.method == 'POST':
         title = request.form['title']
         description = request.form['desc']
-        
-        # Validation: Check if title is at least 4 characters long
+
         if len(title) >= 3:
             todo = ToDo(title=title, desc=description)
             db.session.add(todo)
             db.session.commit()
-            return redirect('/todos')  # Redirect to clear form data
+            return redirect(f'/todos/{page}')
         else:
             error = "Title must be at least 3 characters long"
 
-    # Query all todos and pass error to the template
-    alltodo = ToDo.query.all()
-    return render_template('index.html', alltodo=alltodo, error=error)
+    pagination = ToDo.query.paginate(page=page, per_page=todos_per_page)
+    alltodo = pagination.items
+    has_previous = pagination.has_prev
+    has_next = pagination.has_next
+
+    return render_template(
+        'index.html',
+        alltodo=alltodo,
+        error=error,
+        page=page,
+        todos_per_page=todos_per_page,
+        has_previous=has_previous,
+        has_next=has_next
+    )
+
 
 @app.route('/delete/<int:sNo>')
 @login_required  # Protect this route
@@ -216,10 +250,10 @@ def update(sNo):
         todo.desc = description
         db.session.add(todo)
         db.session.commit()
-        return redirect('/todos')
+        return redirect('/todos/1')
 
     todo = ToDo.query.filter_by(sNo=sNo).first()
     return render_template('update.html', todo=todo)
 
 if __name__ == "__main__":
-    app.run(debug=True, host='0.0.0.0', port=2122)
+    app.run(debug=True, host='0.0.0.0', port=2125)
