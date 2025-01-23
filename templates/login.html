@@ -7,10 +7,7 @@ body %}
   <div class="card shadow-lg" style="width: 100%; max-width: 400px">
     <div class="card-body">
       <h3 class="text-center mb-4">Welcome Back</h3>
-      
-      {% if error %}
-      <div class="alert alert-danger" role="alert">{{ error }}</div>
-      {% endif %}
+
       <form method="POST" action="/login">
         <!-- Email Input -->
         <div class="form-floating mb-3" data-test-id="email">
@@ -22,7 +19,7 @@ body %}
             placeholder="name@example.com"
             required
           />
-          <label for="floatingInput" >Email Address</label>
+          <label for="floatingInput">Email Address</label>
         </div>
 
         <!-- Password Input -->

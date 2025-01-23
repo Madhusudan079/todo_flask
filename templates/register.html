@@ -8,7 +8,7 @@
             <h3 class="text-center mb-4">Create an Account</h3>
             
             <!-- Flash messages for error or success -->
-            {% with messages = get_flashed_messages(with_categories=true) %}
+            <!-- {% with messages = get_flashed_messages(with_categories=true) %}
                 {% if messages %}
                     {% for category, message in messages %}
                         <div class="alert alert-{{ category }}" role="alert" id="flashMessage">
@@ -16,7 +16,7 @@
                         </div>
                     {% endfor %}
                 {% endif %}
-            {% endwith %}
+            {% endwith %} -->
             
             <form method="POST" action="/register" id="signupForm">
                 <!-- Name Input -->
@@ -91,7 +91,7 @@
     </div>
 </div>
 
-<script type="text/javascript">
+<!-- <script type="text/javascript">
     // Function to redirect after a delay
     window.onload = function() {
         const flashMessage = document.getElementById("flashMessage"); 
@@ -102,6 +102,6 @@
             }, 2000);  // 2 seconds delay before redirect
         }
     }
-</script>
+</script> -->
 
 {% endblock body %}

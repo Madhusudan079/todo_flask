@@ -120,6 +120,7 @@ def forgotpassword():
         if user:
             token = generate_reset_token(email)
             send_email(email, 'Password Reset', f"Click the link to reset your password: http://192.168.156.235:2122/reset-password/{token}")
+            flash('password reset link send to your email', 'success')
             return redirect('/login')
             # return 'Password reset link sent'
         else:
@@ -145,21 +146,21 @@ def register():
             return render_template('register.html', error=error)
         
         if password != confirm_password:
-            error = "Passwords do not match"
-            return render_template('register.html', error=error)
+            flash('Passwords do not match', 'error')
+            return render_template('register.html')
 
         # Check if user already exists
         user = collection.find_one({'email': email})
         if user:
-            error = "User already exists"
-            return render_template('register.html', error=error)
+            flash('User already exists', 'error')
+            return render_template('register.html')
         
         # Hash the password and save the user
         hashed_password = hash_password(password)
         collection.insert_one({'name': name, 'email': email, 'password': hashed_password, 'confirm_password': confirm_password})
         flash('User registered successfully', 'success')
         
-        return render_template('register.html', redirect_url='/login')
+        return redirect(url_for('login'))
     
     return render_template('register.html')
 
@@ -177,10 +178,11 @@ def login():
         user = collection.find_one({'email': email})
         if user and verify_password(user['password'], password):
             session['user'] = email
+            flash('Logged in successfully', 'success')
             return redirect('/todos/1')
         
-        error = "Invalid email or password"
-        return render_template('login.html', error=error)
+        flash("Invalid email or password", 'error')
+        return render_template('login.html')
     
     return render_template('login.html')
 
@@ -211,9 +213,10 @@ def todos(page=1):
             todo = ToDo(title=title, desc=description)
             db.session.add(todo)
             db.session.commit()
+            flash('Todo add successfully', 'success')
             return redirect(f'/todos/{page}')
         else:
-            error = "Title must be at least 3 characters long"
+            flash("Title must be at least 3 characters long", 'error')
 
     pagination = ToDo.query.paginate(page=page, per_page=todos_per_page)
     alltodo = pagination.items
@@ -237,7 +240,8 @@ def delete(sNo):
     todo = ToDo.query.filter_by(sNo=sNo).first()
     db.session.delete(todo)
     db.session.commit()
-    return redirect('/todos')
+    flash('todo delete successfully', 'success')
+    return redirect('/todos/1')
 
 @app.route('/update/<int:sNo>', methods=['GET', 'POST'])
 @login_required  # Protect this route
@@ -256,4 +260,4 @@ def update(sNo):
     return render_template('update.html', todo=todo)
 
 if __name__ == "__main__":
-    app.run(debug=True, host='0.0.0.0', port=2125)
+    app.run(debug=True, host='0.0.0.0', port=7800)
