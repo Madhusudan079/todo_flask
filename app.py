@@ -88,6 +88,7 @@ def home():
 @app.route('/logout')
 def logout():
     session.clear()
+    flash('Logged out successfully', 'success')
     return redirect('/')
 
 @app.route('/reset-password/<token>', methods=['GET', 'POST'])
@@ -103,7 +104,7 @@ def reset_password(token):
 
         # Update the user's password in the database
         collection.update_one({'email': email}, {'$set': {'password': hash_password(new_password)}})
-
+        flash('Your password has been successfully reset. You can now log in.', 'success')
         return redirect('/login')
 
         # return "Your password has been successfully reset. You can now log in.", 200
@@ -119,7 +120,7 @@ def forgotpassword():
         user = collection.find_one({'email': email})
         if user:
             token = generate_reset_token(email)
-            send_email(email, 'Password Reset', f"Click the link to reset your password: http://192.168.156.235:2122/reset-password/{token}")
+            send_email(email, 'Password Reset', f"Click the link to reset your password: http://192.168.156.235:7800/reset-password/{token}")
             flash('password reset link send to your email', 'success')
             return redirect('/login')
             # return 'Password reset link sent'
@@ -133,8 +134,8 @@ def register():
     if request.method == 'POST':
         name = request.form['name']
         if not name or name.isdigit():
-            error = "Name must be a valid string (not numeric or empty)."
-            return render_template('register.html', error=error)
+            flash("Name must be a valid string (not numeric or empty).", 'error')
+            return render_template('register.html')
 
         email = request.form['email']
         password = request.form['password']
@@ -142,8 +143,8 @@ def register():
         
         password_regex = r'^(?=.*[A-Z])(?=.*[a-z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{6,}$'
         if not re.match(password_regex, password):
-            error = "Password must be at least 6 characters long and contain at least one uppercase letter, one lowercase letter, one digit, and one special character"
-            return render_template('register.html', error=error)
+            flash("Password must be at least 6 characters long and contain at least one uppercase letter, one lowercase letter, one digit, and one special character.", 'error')
+            return render_template('register.html')
         
         if password != confirm_password:
             flash('Passwords do not match', 'error')
@@ -177,6 +178,7 @@ def login():
         # Check if user exists
         user = collection.find_one({'email': email})
         if user and verify_password(user['password'], password):
+            # print(verify_password)
             session['user'] = email
             flash('Logged in successfully', 'success')
             return redirect('/todos/1')
@@ -190,7 +192,7 @@ def login_required(func):
     def wrapper(*args, **kwargs):
         if 'user' not in session:
             return redirect('/login')
-        print(session['user'])
+        # print(session['user'])
         return func(*args, **kwargs)
     wrapper.__name__ = func.__name__  # Preserve the original function name
     return wrapper
@@ -254,10 +256,11 @@ def update(sNo):
         todo.desc = description
         db.session.add(todo)
         db.session.commit()
+        flash('todo update successfully', 'success')
         return redirect('/todos/1')
 
     todo = ToDo.query.filter_by(sNo=sNo).first()
     return render_template('update.html', todo=todo)
 
 if __name__ == "__main__":
-    app.run(debug=True, host='0.0.0.0', port=7800)
+    app.run(host='0.0.0.0', port=7800)
