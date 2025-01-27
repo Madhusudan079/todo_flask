@@ -1,0 +1,31 @@
+{% extends 'base.html' %}
+
+{% block body %}
+    
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" 
+          content="width=device-width, 
+                   initial-scale=1.0">
+    <title>
+        404 Page Not Found
+    </title>
+    <link rel="stylesheet" 
+          href="{{ url_for('static', filename='css/404.css') }}">
+</head>
+
+<body>
+    <div class="error-container">
+        <h1> 404 </h1>
+        <p>
+            Oops! The page you're
+            looking for is not here.
+        </p>
+        <a href="/goback" class="btn btn-primary">Go-Back</a>
+        </a>
+    </div>
+</body>
+
+
+
+{% endblock body %}

@@ -6,15 +6,16 @@ import certifi
 from dotenv import load_dotenv
 import os
 import smtplib
+from flasgger import Swagger
 from flask_wtf import FlaskForm
 from email.mime.text import MIMEText
 from email.mime.multipart import MIMEMultipart
 from itsdangerous import URLSafeTimedSerializer
 import random
+from werkzeug.utils import secure_filename
 from utils.auth import hash_password, verify_password
 import re
 import time
-
 
 a = ['a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i', 'j', 'k', 'l', 'm', 'n', 'o', 'p', 'q', 'r', 's', 't', 'u', 'v', 'w', 'x', 'y', 'z']
 
@@ -33,11 +34,16 @@ db = client['user_auth_db']
 collection = db['users']
 
 app = Flask(__name__)
+swagger = Swagger(app)
+app.config['UPLOAD_FOLDER'] = 'uploads'
 app.config["SQLALCHEMY_DATABASE_URI"] = "sqlite:///todo.db"
 app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
-app.secret_key = 'supersecretkey'  # Secret key for sessions
+app.secret_key = 'super secret key'  # Secret key for sessions
 
 db = SQLAlchemy(app)
+
+# Ensure the upload folder exists
+os.makedirs(app.config['UPLOAD_FOLDER'], exist_ok=True)
 
 # Define the ToDo model
 class ToDo(db.Model):
@@ -45,9 +51,10 @@ class ToDo(db.Model):
     title = db.Column(db.String(200), nullable=False)
     desc = db.Column(db.String(500), nullable=False)
     date_created = db.Column(db.DateTime, default=datetime.now().replace(microsecond=0))    
+    file = db.Column(db.String(200), nullable=True)
 
     def __repr__(self):
-        return f"{self.sNo} - {self.title} - {self.desc}"
+        return f"{self.sNo} - {self.title} - {self.desc} - {self.file}"
 
 # Create the database tables
 with app.app_context():
@@ -84,12 +91,15 @@ def send_email(receiver_email, subject, body):
 def home():
     return render_template('login.html')
 
-
 @app.route('/logout')
 def logout():
+    # Clear the user's session
     session.clear()
     flash('Logged out successfully', 'success')
     return redirect('/')
+@app.errorhandler(404)
+def page_not_found(e):
+    return render_template('404.html')
 
 @app.route('/reset-password/<token>', methods=['GET', 'POST'])
 def reset_password(token):
@@ -117,16 +127,27 @@ def reset_password(token):
 def forgotpassword():
     if request.method == 'POST':
         email = request.form['email']
+        print(email)
         user = collection.find_one({'email': email})
         if user:
             token = generate_reset_token(email)
-            send_email(email, 'Password Reset', f"Click the link to reset your password: http://192.168.156.235:7800/reset-password/{token}")
+            send_email(email, 'Password Reset', f"Click the link to reset your password: https://t31kp2fr-7777.inc1.devtunnels.ms/reset-password/{token}")
             flash('password reset link send to your email', 'success')
             return redirect('/login')
             # return 'Password reset link sent'
         else:
             return render_template('forgotpassword.html', error="User not found.")
     return render_template('forgotpassword.html')
+
+@app.route('/search', methods=['GET', 'POST'])
+def search():
+    if request.method == 'POST':
+        query = request.form['query']
+        # Filter the data (assuming title and desc are columns in your ToDo model)
+        todos = ToDo.query.filter(ToDo.title.contains(query) | ToDo.desc.contains(query)).all()
+        result = [{'title': todo.title, 'desc': todo.desc} for todo in todos]
+        return jsonify(result)
+
 
 
 @app.route('/register', methods=['GET', 'POST'])
@@ -178,7 +199,7 @@ def login():
         # Check if user exists
         user = collection.find_one({'email': email})
         if user and verify_password(user['password'], password):
-            # print(verify_password)
+            print(verify_password)
             session['user'] = email
             flash('Logged in successfully', 'success')
             return redirect('/todos/1')
@@ -192,7 +213,7 @@ def login_required(func):
     def wrapper(*args, **kwargs):
         if 'user' not in session:
             return redirect('/login')
-        # print(session['user'])
+        print(session['user'])
         return func(*args, **kwargs)
     wrapper.__name__ = func.__name__  # Preserve the original function name
     return wrapper
@@ -210,17 +231,27 @@ def todos(page=1):
     if request.method == 'POST':
         title = request.form['title']
         description = request.form['desc']
+        file_upload = request.files['file']
 
-        if len(title) >= 3:
-            todo = ToDo(title=title, desc=description)
+        if len(title) < 3:
+            flash("Title must be at least 3 characters long", 'error')
+        else:
+            # Save the file securely
+            if file_upload and file_upload.filename != '':
+                filename = secure_filename(file_upload.filename)
+                file_path = os.path.join(app.config['UPLOAD_FOLDER'], filename)
+                file_upload.save(file_path)
+            else:
+                filename = None
+
+            # Add the new ToDo
+            todo = ToDo(title=title, desc=description, file=filename)
             db.session.add(todo)
             db.session.commit()
-            flash('Todo add successfully', 'success')
-            return redirect(f'/todos/{page}')
-        else:
-            flash("Title must be at least 3 characters long", 'error')
+            flash('Todo added successfully', 'success')
+            return redirect(url_for('todos', page=page))
 
-    pagination = ToDo.query.paginate(page=page, per_page=todos_per_page)
+    pagination = ToDo.query.paginate(page=page, per_page=todos_per_page) 
     alltodo = pagination.items
     has_previous = pagination.has_prev
     has_next = pagination.has_next
@@ -235,11 +266,19 @@ def todos(page=1):
         has_next=has_next
     )
 
+@app.route('/uploads/<filename>')
+def uploaded_file(filename):
+    return send_from_directory(app.config['UPLOAD_FOLDER'], filename)
+
 
 @app.route('/delete/<int:sNo>')
 @login_required  # Protect this route
 def delete(sNo):
     todo = ToDo.query.filter_by(sNo=sNo).first()
+    # if todo.file:
+    file_path = os.path.join(app.config['UPLOAD_FOLDER'], todo.file)
+    if os.path.exists(file_path):
+        os.remove(file_path)
     db.session.delete(todo)
     db.session.commit()
     flash('todo delete successfully', 'success')
@@ -248,6 +287,9 @@ def delete(sNo):
 @app.route('/update/<int:sNo>', methods=['GET', 'POST'])
 @login_required  # Protect this route
 def update(sNo):
+
+
+
     if request.method == 'POST':
         title = request.form['title']
         description = request.form['desc']
@@ -262,5 +304,11 @@ def update(sNo):
     todo = ToDo.query.filter_by(sNo=sNo).first()
     return render_template('update.html', todo=todo)
 
+@app.route('/example', methods=['GET', "POST"])
+def example():
+
+    tasks = [{"id": 1, "title": "Example Task", "status": "To Do"}]
+    return jsonify(tasks)
+
 if __name__ == "__main__":
-    app.run(host='0.0.0.0', port=7800)
+    app.run(debug=True, host='0.0.0.0', port=7777)

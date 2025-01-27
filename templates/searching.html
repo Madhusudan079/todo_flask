@@ -1,0 +1,45 @@
+<!-- {% extends 'base.html' %}
+
+{% block body %}
+<div class="container mt-4">
+    <h1>Search ToDos</h1>
+    <form id="searchForm" class="d-flex mb-4" role="search">
+        <input 
+            class="form-control me-2" 
+            type="search" 
+            placeholder="Search" 
+            aria-label="Search" 
+            id="query" 
+            name="query" 
+            value="{{ query }}">
+        <button class="btn btn-outline-success" type="submit">Search</button>
+    </form>
+</div>
+
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+<script>
+    $(document).ready(function () {
+        $('#searchForm').on('submit', function (e) {
+            e.preventDefault();  // Prevent page reload
+
+            const query = $('#query').val();
+
+            $.ajax({
+                url: '/search',
+                method: 'POST',
+                data: { query: query },
+                success: function (response) {
+                    // Redirect to the search results page with the query in the URL
+                    window.location.href = "/todos/1?query=" + query;
+                },
+                error: function () {
+                    alert('An error occurred during search.');
+                }
+            });
+        });
+    });
+</script>
+
+
+    
+{% endblock body %} -->
