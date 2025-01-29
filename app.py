@@ -33,7 +33,7 @@ collection = db['users']
 
 app = Flask(__name__)
 swagger = Swagger(app)
-app.config['UPLOAD_FOLDER'] = 'uploads'
+app.config['UPLOAD_FOLDER'] = '/tmp/uploads'
 app.config["SQLALCHEMY_DATABASE_URI"] = "sqlite:///todo.db"
 app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
 app.secret_key = 'super secret key'  # Secret key for sessions
@@ -330,4 +330,4 @@ def update(sNo):
     return render_template('update.html', todo=todo)
 
 if __name__ == "__main__":
-    app.run()
+    app.run(debug=True, host = '0.0.0.0', port = 7878)
