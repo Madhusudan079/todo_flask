@@ -7,7 +7,6 @@ from dotenv import load_dotenv
 import os
 import smtplib
 from flasgger import Swagger
-from flask_wtf import FlaskForm
 from email.mime.text import MIMEText
 from email.mime.multipart import MIMEMultipart
 from itsdangerous import URLSafeTimedSerializer
@@ -15,7 +14,6 @@ import random
 from werkzeug.utils import secure_filename
 from utils.auth import hash_password, verify_password
 import re
-import time
 
 a = ['a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i', 'j', 'k', 'l', 'm', 'n', 'o', 'p', 'q', 'r', 's', 't', 'u', 'v', 'w', 'x', 'y', 'z']
 
@@ -93,10 +91,10 @@ def home():
 
 @app.route('/logout')
 def logout():
-    # Clear the user's session
     session.clear()
     flash('Logged out successfully', 'success')
     return redirect('/')
+
 @app.errorhandler(404)
 def page_not_found(e):
     return render_template('404.html')
@@ -138,17 +136,6 @@ def forgotpassword():
         else:
             return render_template('forgotpassword.html', error="User not found.")
     return render_template('forgotpassword.html')
-
-@app.route('/search', methods=['GET', 'POST'])
-def search():
-    if request.method == 'POST':
-        query = request.form['query']
-        # Filter the data (assuming title and desc are columns in your ToDo model)
-        todos = ToDo.query.filter(ToDo.title.contains(query) | ToDo.desc.contains(query)).all()
-        result = [{'title': todo.title, 'desc': todo.desc} for todo in todos]
-        return jsonify(result)
-
-
 
 @app.route('/register', methods=['GET', 'POST'])
 def register():
@@ -220,13 +207,19 @@ def login_required(func):
 
 @app.route('/goback')
 def goback():
-    return redirect('/login')
+    return redirect('/todos/1')
+
+@app.route('/home_page')
+@login_required
+def home_page():
+    return render_template('home.html')
 
 @app.route('/todos/<int:page>', methods=['GET', 'POST'])
 @login_required
 def todos(page=1):
     error = None
     todos_per_page = 10
+    search_query = request.args.get('search', '').strip() 
 
     if request.method == 'POST':
         title = request.form['title']
@@ -236,7 +229,6 @@ def todos(page=1):
         if len(title) < 3:
             flash("Title must be at least 3 characters long", 'error')
         else:
-            # Save the file securely
             if file_upload and file_upload.filename != '':
                 filename = secure_filename(file_upload.filename)
                 file_path = os.path.join(app.config['UPLOAD_FOLDER'], filename)
@@ -244,17 +236,24 @@ def todos(page=1):
             else:
                 filename = None
 
-            # Add the new ToDo
             todo = ToDo(title=title, desc=description, file=filename)
             db.session.add(todo)
             db.session.commit()
             flash('Todo added successfully', 'success')
             return redirect(url_for('todos', page=page))
 
-    pagination = ToDo.query.paginate(page=page, per_page=todos_per_page) 
-    alltodo = pagination.items
-    has_previous = pagination.has_prev
-    has_next = pagination.has_next
+    if search_query:
+        todos = ToDo.query.filter(ToDo.title.contains(search_query)).paginate(page=page, per_page=todos_per_page)
+        alltodo = todos.items
+        has_previous = todos.has_prev
+        has_next = todos.has_next
+        search_performed = True
+    else:
+        pagination = ToDo.query.paginate(page=page, per_page=todos_per_page)
+        alltodo = pagination.items
+        has_previous = pagination.has_prev
+        has_next = pagination.has_next
+        search_performed = False
 
     return render_template(
         'index.html',
@@ -263,8 +262,11 @@ def todos(page=1):
         page=page,
         todos_per_page=todos_per_page,
         has_previous=has_previous,
-        has_next=has_next
+        has_next=has_next,
+        search_performed=search_performed,
+        search_query=search_query
     )
+
 
 @app.route('/uploads/<filename>')
 def uploaded_file(filename):
@@ -275,27 +277,50 @@ def uploaded_file(filename):
 @login_required  # Protect this route
 def delete(sNo):
     todo = ToDo.query.filter_by(sNo=sNo).first()
-    # if todo.file:
-    file_path = os.path.join(app.config['UPLOAD_FOLDER'], todo.file)
-    if os.path.exists(file_path):
-        os.remove(file_path)
+
+    if not todo:
+        flash('Todo not found', 'error')
+        return redirect(url_for('todos', page=1))  # Redirect safely
+
+    if todo.file:  # Ensure file exists before using it
+        file_path = os.path.join(app.config['UPLOAD_FOLDER'], todo.file)
+        
+        if os.path.exists(file_path):  # Check if file_path is valid
+            os.remove(file_path)
+
     db.session.delete(todo)
     db.session.commit()
-    flash('todo delete successfully', 'success')
-    return redirect('/todos/1')
+    flash('Todo deleted successfully', 'success')
+
+    return redirect(url_for('todos', page=1))
 
 @app.route('/update/<int:sNo>', methods=['GET', 'POST'])
 @login_required  # Protect this route
 def update(sNo):
-
-
-
     if request.method == 'POST':
         title = request.form['title']
         description = request.form['desc']
+        file_upload = request.files['file']
         todo = ToDo.query.filter_by(sNo=sNo).first()
         todo.title = title
         todo.desc = description
+
+        old_file = todo.file
+
+        if file_upload and file_upload.filename != '':
+            filename = secure_filename(file_upload.filename)
+            file_path = os.path.join(app.config['UPLOAD_FOLDER'], filename)
+
+            if old_file:
+                old_file_path = os.path.join(app.config['UPLOAD_FOLDER'], old_file)
+                print(old_file_path)
+                if os.path.exists(old_file_path):
+                    os.remove(old_file_path)
+            
+            file_upload.save(file_path)
+            todo.file = filename
+
+
         db.session.add(todo)
         db.session.commit()
         flash('todo update successfully', 'success')
@@ -304,11 +329,5 @@ def update(sNo):
     todo = ToDo.query.filter_by(sNo=sNo).first()
     return render_template('update.html', todo=todo)
 
-@app.route('/example', methods=['GET', "POST"])
-def example():
-
-    tasks = [{"id": 1, "title": "Example Task", "status": "To Do"}]
-    return jsonify(tasks)
-
 if __name__ == "__main__":
-    app.run(debug=True, host='0.0.0.0', port=7777)
+    app.run()

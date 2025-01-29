@@ -4,7 +4,7 @@
     <div class="container mt-5">
       <h2>Update Todo List</h2>
       <!-- Form to Add Todo -->
-      <form action="/update/{{ todo.sNo }}" method="POST">
+      <form action="/update/{{ todo.sNo }}" method="POST" enctype="multipart/form-data">
         <div class="mb-3">
           <label for="title" class="form-label">ToDo Title</label>
           <input type="text" class="form-control" value="{{todo.title}}" id = "title" name="title">
@@ -12,6 +12,10 @@
         <div class="mb-3">
           <label for="desc" class="form-label">ToDo Description</label>
           <input type="text" class="form-control" value = "{{todo.desc}}" id="desc" name="desc">
+        </div>
+        <div class="mb-3">
+          <label for="file" class="form-label">Update File (Optional)</label>
+          <input type="file" class="form-control" id="file" name="file">
         </div>
         <button type="submit" class="btn btn-primary">Update</button>
         <button type="submit" class="btn closeButton"> Cancel</button>

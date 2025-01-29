@@ -1,17 +1,42 @@
 {% extends 'base.html' %}
 {% block title %} Home {% endblock title %}
 {% block body %}
+
+<link rel="stylesheet" href="https://fonts.googleapis.com/icon?family=Material+Icons">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
+<nav class="navbar navbar-expand-lg bg-body-tertiary">
+  <div class="container-fluid">
+    <a class="navbar-brand" href="/todos/1">MyTodo</a>
+    <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarSupportedContent" aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+      <span class="navbar-toggler-icon"></span>
+    </button>
+    <div class="collapse navbar-collapse" id="navbarSupportedContent">
+      <ul class="navbar-nav me-auto mb-2 mb-lg-0">
+        <li class="nav-item">
+          <a class="nav-link active" aria-current="page" href="/home_page">Home</a>
+        </li>
+        <li class="nav-item">
+          <a class="nav-link" href="/about">About</a>
+        </li>
+      </ul>
+      <form class="d-flex" role="search" action="{{ url_for('todos', page=page) }}" method="get">
+        <input class="form-control me-2" type="search" placeholder="Search" name="search">
+        <button class="btn btn-outline-success" type="submit">Search</button>
+    </form>    
+    </div>
+  </div>
+</nav>
     <!-- Profile Menu with Circular Icon -->
-    <div class="profile-menu" style="float: right ; margin-right: 85px;">
-            <button  alt="Profile" class="profile-icon" onclick="toggleDropdown()">
-        </button>
+    <div class="profile-icon" style="float: right ; margin-right: 15px;">
+            <i  alt="Profile" class="fa fa-user-circle-o"  onclick="toggleDropdown(event)" style="font-size:36px; color: #4C8BF5; margin-top: 30px;">
+            </i>
         <div class="dropdown-content" id="profile-dropdown">
-        <a href="/logout" class="btn btn-primary" style="--bs-btn-padding-y: .15rem; --bs-btn-padding-x: .3rem; --bs-btn-font-size: .60rem;">Logout</a>
+          <!-- remove background color show only icon -->
+        <a href="/logout" class="material-icons text-muted" style="font-size: 20px;">logout</a>
         </div>
     </div>
 
     <div class="container mt-5">
-      <h2>Todo List</h2>
       {% if error %}
       <div class="alert alert-danger" role="alert">
         {{ error }}
@@ -48,7 +73,7 @@
             <th scope="col">Description</th>
             <th scope="col">Date/Time</th>
             <th scope="col">Images</th>
-            <th scope="col">Actions</th>
+            <th scope="col" class="text-left" style="padding-left: 50px; padding-right: 20px;">Actions</th>
           </tr>
         </thead>
         <tbody>
@@ -115,8 +140,8 @@
         .dropdown-content {
           display: none;
           position: absolute;
-          background-color: #f9f9f9;
-          min-width: 160px;
+          background-color: transparent;
+          min-width: 10px;
           box-shadow: 0px 8px 16px rgba(0, 0, 0, 0.2);
           z-index: 1;
           border-radius: 5px;
@@ -124,13 +149,13 @@
 
         .dropdown-content a {
           color: black;
-          padding: 12px 16px;
+          padding: 6px 12px;
           text-decoration: none;
           display: block;
         }
 
         .dropdown-content a:hover {
-          background-color: #ddd;
+          background-color: transparent;
         }
 
         /* Show the dropdown when the profile button is clicked */
@@ -141,10 +166,20 @@
 
     <!-- JavaScript to Toggle Dropdown -->
     <script>
-        function toggleDropdown() {
-            var dropdown = document.getElementById('profile-dropdown');
-            dropdown.classList.toggle('show-dropdown');
+        function toggleDropdown(event) {
+        var dropdown = document.getElementById('profile-dropdown');
+        dropdown.classList.toggle('show-dropdown');
+        event.stopPropagation(); // Prevents the click event from propagating to the document
+      }
+
+      // Close the dropdown if the user clicks anywhere outside of it
+      document.addEventListener('click', function(event) {
+        var dropdown = document.getElementById('profile-dropdown');
+        var profileMenu = document.querySelector('.profile-icon');
+        if (!profileMenu.contains(event.target)) {
+          dropdown.classList.remove('show-dropdown');
         }
+      });
     </script>
 
     <script

@@ -1,45 +1,64 @@
-<!-- {% extends 'base.html' %}
+{% extends 'base.html' %}
 
 {% block body %}
-<div class="container mt-4">
-    <h1>Search ToDos</h1>
-    <form id="searchForm" class="d-flex mb-4" role="search">
-        <input 
-            class="form-control me-2" 
-            type="search" 
-            placeholder="Search" 
-            aria-label="Search" 
-            id="query" 
-            name="query" 
-            value="{{ query }}">
-        <button class="btn btn-outline-success" type="submit">Search</button>
-    </form>
-</div>
+{% if not search_performed %}
+<link rel="stylesheet" href="https://fonts.googleapis.com/icon?family=Material+Icons">
+<form class="d-flex" role="search" action="{{ url_for('todos', page=page) }}" method="get">
+    <input class="form-control me-2" type="search" placeholder="Search" name="search" value="{{ search_query }}" aria-label="Search">
+    <button class="btn btn-outline-success" type="submit">Search</button>
+</form>
+{% endif %}
 
-<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
-<script>
-    $(document).ready(function () {
-        $('#searchForm').on('submit', function (e) {
-            e.preventDefault();  // Prevent page reload
+{% if search_performed %}
+    {% if alltodo %}
+        <table class="table">
+            <thead>
+                <tr>
+                    <th scope="col">Sno</th>
+                    <th scope="col">Title</th>
+                    <th scope="col">Description</th>
+                    <th scope="col">Date/Time</th>
+                    <th scope="col">Images</th>
+                    <th scope="col">Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for todo in alltodo %}
+                    <tr>
+                        <th scope="row">{{ loop.index }}</th>
+                        <td>{{ todo.title }}</td>
+                        <td>{{ todo.desc }}</td>
+                        <td>{{ todo.date_created }}</td>
+                        <td>
+                            {% if todo.file %}
+                                <a href="{{ url_for('uploaded_file', filename=todo.file) }}" target="_blank" class="btn btn-outline-primary">View</a>
+                            {% else %}
+                                <button class="btn btn-outline-primary" disabled>No Img</button>
+                            {% endif %}
+                        </td>
+                        <td>
+                            <a href="/update/{{ todo.sNo }}" class="btn btn-primary mx-2">Update</a>
+                            <a href="/delete/{{ todo.sNo }}" class="btn btn-danger mx-2">Delete</a>
+                        </td>
+                    </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+        <div class="pagination d-flex justify-content-center">
+            {% if has_previous %}
+                <a href="{{ url_for('todos', page=page - 1) }}" class="btn btn-primary mx-2">Previous</a>
+            {% else %}
+                <button class="btn btn-secondary mx-2" disabled>Previous</button>
+            {% endif %}
 
-            const query = $('#query').val();
-
-            $.ajax({
-                url: '/search',
-                method: 'POST',
-                data: { query: query },
-                success: function (response) {
-                    // Redirect to the search results page with the query in the URL
-                    window.location.href = "/todos/1?query=" + query;
-                },
-                error: function () {
-                    alert('An error occurred during search.');
-                }
-            });
-        });
-    });
-</script>
-
-
-    
-{% endblock body %} -->
+            {% if has_next %}
+                <a href="{{ url_for('todos', page=page + 1) }}" class="btn btn-primary mx-2">Next</a>
+            {% else %}
+                <button class="btn btn-secondary mx-2" disabled>Next</button>
+            {% endif %}
+        </div>
+    {% else %}
+        <p>No todos found matching your search criteria.</p>
+    {% endif %}
+{% endif %}
+{% endblock body %}
