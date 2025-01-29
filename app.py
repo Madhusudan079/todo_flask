@@ -1,10 +1,7 @@
 from flask import  *
 from flask_sqlalchemy import SQLAlchemy
 from datetime import datetime
-from pymongo import MongoClient
-import certifi 
-from dotenv import load_dotenv
-import os
+from mongo_config import *
 import smtplib
 from flasgger import Swagger
 from email.mime.text import MIMEText
@@ -20,28 +17,19 @@ a = ['a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i', 'j', 'k', 'l', 'm', 'n', 'o', 
 SECRET_KEY = ''.join(random.choices(a, k=16))
 serializer = URLSafeTimedSerializer(SECRET_KEY)
 
-load_dotenv()
-
-MONGO_URI = os.getenv("MONGO_URI")
-EMAIL_ADDRESS = os.getenv("EMAIL_ADDRESS")
-EMAIL_PASSWORD = os.getenv("EMAIL_PASSWORD")
-
-
-client = MongoClient(MONGO_URI, tlsCAFile=certifi.where())
-db = client['user_auth_db']
-collection = db['users']
-
 app = Flask(__name__)
 swagger = Swagger(app)
 app.config['UPLOAD_FOLDER'] = '/tmp/uploads'
 app.config["SQLALCHEMY_DATABASE_URI"] = "sqlite:///todo.db"
 app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
-app.secret_key = 'super secret key'  # Secret key for sessions
+app.secret_key = 'super secret key'
 
 db = SQLAlchemy(app)
 
 # Ensure the upload folder exists
 os.makedirs(app.config['UPLOAD_FOLDER'], exist_ok=True)
+
+allowed_image_extension = ['jpg', 'png', 'jpeg']
 
 # Define the ToDo model
 class ToDo(db.Model):
@@ -50,9 +38,10 @@ class ToDo(db.Model):
     desc = db.Column(db.String(500), nullable=False)
     date_created = db.Column(db.DateTime, default=datetime.now().replace(microsecond=0))    
     file = db.Column(db.String(200), nullable=True)
+    user_id = db.Column(db.String(200), nullable=False)
 
     def __repr__(self):
-        return f"{self.sNo} - {self.title} - {self.desc} - {self.file}"
+        return f"{self.sNo} - {self.title} - {self.desc} - {self.file} -{self.user_id}"
 
 # Create the database tables
 with app.app_context():
@@ -67,6 +56,9 @@ def verify_reset_token(token, expiration=600):
         return email
     except:
         return None
+    
+def allow_image(filename):
+    return '.' in filename and filename.rsplit('.', 1)[1].lower() in allowed_image_extension
 
 def send_email(receiver_email, subject, body):
     try:
@@ -182,9 +174,15 @@ def login():
     if request.method == 'POST':
         email = request.form['email']
         password = request.form['password']
+        session['email'] = email 
         
         # Check if user exists
         user = collection.find_one({'email': email})
+        if not user:
+            flash('User not found', 'error')
+            return render_template('login.html')
+        
+        # Check if password is correct  
         if user and verify_password(user['password'], password):
             print(verify_password)
             session['user'] = email
@@ -219,7 +217,7 @@ def home_page():
 def todos(page=1):
     error = None
     todos_per_page = 10
-    search_query = request.args.get('search', '').strip() 
+    search_query = request.args.get('search', '').strip()
 
     if request.method == 'POST':
         title = request.form['title']
@@ -230,26 +228,30 @@ def todos(page=1):
             flash("Title must be at least 3 characters long", 'error')
         else:
             if file_upload and file_upload.filename != '':
+                if not allow_image(file_upload.filename):
+                    flash('Invalid file type. Please upload file of type {}.'.format(allowed_image_extension), 'error')
+                    return redirect(url_for('todos', page=page))
                 filename = secure_filename(file_upload.filename)
                 file_path = os.path.join(app.config['UPLOAD_FOLDER'], filename)
                 file_upload.save(file_path)
             else:
                 filename = None
 
-            todo = ToDo(title=title, desc=description, file=filename)
+            todo = ToDo(title=title, desc=description, file=filename, user_id=session['user'])
             db.session.add(todo)
             db.session.commit()
             flash('Todo added successfully', 'success')
             return redirect(url_for('todos', page=page))
 
     if search_query:
-        todos = ToDo.query.filter(ToDo.title.contains(search_query)).paginate(page=page, per_page=todos_per_page)
+        todos = ToDo.query.filter(ToDo.title.contains(search_query) | ToDo.desc.contains(search_query), ToDo.user_id == session['user']).paginate(page=page, per_page=todos_per_page)
         alltodo = todos.items
         has_previous = todos.has_prev
         has_next = todos.has_next
         search_performed = True
+        flash(f'Search Successfully', 'success')
     else:
-        pagination = ToDo.query.paginate(page=page, per_page=todos_per_page)
+        pagination = ToDo.query.filter(ToDo.user_id == session['user']).paginate(page=page, per_page=todos_per_page)
         alltodo = pagination.items
         has_previous = pagination.has_prev
         has_next = pagination.has_next
@@ -257,6 +259,7 @@ def todos(page=1):
 
     return render_template(
         'index.html',
+        email=session.get('email'),
         alltodo=alltodo,
         error=error,
         page=page,
@@ -266,6 +269,7 @@ def todos(page=1):
         search_performed=search_performed,
         search_query=search_query
     )
+
 
 
 @app.route('/uploads/<filename>')
@@ -308,6 +312,9 @@ def update(sNo):
         old_file = todo.file
 
         if file_upload and file_upload.filename != '':
+            if not allow_image(file_upload.filename):
+                flash('Invalid file type. Please upload file of type {}.'.format(allowed_image_extension), 'error')
+                return redirect(url_for('update', sNo=sNo))
             filename = secure_filename(file_upload.filename)
             file_path = os.path.join(app.config['UPLOAD_FOLDER'], filename)
 

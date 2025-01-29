@@ -4,10 +4,12 @@
 
 <link rel="stylesheet" href="https://fonts.googleapis.com/icon?family=Material+Icons">
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
+
 <nav class="navbar navbar-expand-lg bg-body-tertiary">
   <div class="container-fluid">
     <a class="navbar-brand" href="/todos/1">MyTodo</a>
-    <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarSupportedContent" aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+    <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarSupportedContent"
+      aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
       <span class="navbar-toggler-icon"></span>
     </button>
     <div class="collapse navbar-collapse" id="navbarSupportedContent">
@@ -22,170 +24,131 @@
       <form class="d-flex" role="search" action="{{ url_for('todos', page=page) }}" method="get">
         <input class="form-control me-2" type="search" placeholder="Search" name="search">
         <button class="btn btn-outline-success" type="submit">Search</button>
-    </form>    
+      </form>
+    </div>
+
+    <!-- Profile Circle -->
+    <div class="profile-wrapper" style="position: relative;">
+      <div id="profile-initials" class="profile-initials" onclick="toggleDropdown(event)"
+        style="width: 40px; height: 40px; border-radius: 50%; background-color: #4C8BF5; color: white; display: flex; 
+        justify-content: center; align-items: center; font-size: 20px; font-weight: bold; cursor: pointer; margin-left: 15px;">
+      </div>
+
+      <!-- Dropdown -->
+      <div id="profile-dropdown" class="dropdown-content"
+        style="display: none; position: absolute; right: 0; background: white; border: 1px solid #ddd; 
+        border-radius: 5px; padding: 10px; box-shadow: 0px 4px 6px rgba(0,0,0,0.1);">
+        <a href="/logout" class="material-icons text-muted" style="font-size: 10px;">logout</a>
+      </div>
     </div>
   </div>
 </nav>
-    <!-- Profile Menu with Circular Icon -->
-    <div class="profile-icon" style="float: right ; margin-right: 15px;">
-            <i  alt="Profile" class="fa fa-user-circle-o"  onclick="toggleDropdown(event)" style="font-size:36px; color: #4C8BF5; margin-top: 30px;">
-            </i>
-        <div class="dropdown-content" id="profile-dropdown">
-          <!-- remove background color show only icon -->
-        <a href="/logout" class="material-icons text-muted" style="font-size: 20px;">logout</a>
-        </div>
+
+<script>
+  document.addEventListener("DOMContentLoaded", function () {
+    var email = "{{ email }}";  // Flask से email प्राप्त करें
+    if (email) {
+      var firstLetter = email.charAt(0).toUpperCase();
+      document.getElementById("profile-initials").innerText = firstLetter;
+    }
+  });
+
+  function toggleDropdown(event) {
+    var dropdown = document.getElementById('profile-dropdown');
+    dropdown.style.display = (dropdown.style.display === "block") ? "none" : "block";
+    event.stopPropagation();
+  }
+
+  document.addEventListener("click", function (event) {
+    var dropdown = document.getElementById('profile-dropdown');
+    if (!event.target.closest(".profile-wrapper")) {
+      dropdown.style.display = "none";
+    }
+  });
+</script>
+
+
+<div class="container mt-5">
+  {% if error %}
+  <div class="alert alert-danger" role="alert">
+    {{ error }}
+  </div>
+  {% endif %}
+  <!-- Form to Add Todo -->
+  <form action="/todos/{{page}}" method="POST" enctype="multipart/form-data">
+    <div class="mb-3">
+      <label for="title" class="form-label">ToDo Title</label>
+      <input type="text" class="form-control" id="title" name="title">
     </div>
-
-    <div class="container mt-5">
-      {% if error %}
-      <div class="alert alert-danger" role="alert">
-        {{ error }}
-      </div>
-      {% endif %}
-      <!-- Form to Add Todo -->
-      <form action="/todos/{{page}}" method="POST" enctype="multipart/form-data">
-        <div class="mb-3">
-          <label for="title" class="form-label">ToDo Title</label>
-          <input type="text" class="form-control" id="title" name="title">
-        </div>
-        <div class="mb-3">
-          <label for="desc" class="form-label">ToDo Description</label>
-          <input type="text" class="form-control" id="desc" name="desc">
-        </div>
-        <div class="mb-3">
-          <label for="file" class="form-label">Upload File (Optional)</label><input type="file" class="form-control" id="file" name="file"></label>
-        </div>
-        <button type="submit" class="btn btn-primary">Submit</button>
-      </form>
+    <div class="mb-3">
+      <label for="desc" class="form-label">ToDo Description</label>
+      <input type="text" class="form-control" id="desc" name="desc">
     </div>
-    <div class="container mt-5">
-      <h2>Todo Card</h2>
-      {% if alltodo|length == 0 %}
-      <div class="alert alert-info" role="alert">
-        No tasks added yet. Add a new task above!
-      </div>
-      {% else %}
-      <table class="table">
-        <thead>
-          <tr>
-            <th scope="col">Sno</th>
-            <th scope="col">Title</th>
-            <th scope="col">Description</th>
-            <th scope="col">Date/Time</th>
-            <th scope="col">Images</th>
-            <th scope="col" class="text-left" style="padding-left: 50px; padding-right: 20px;">Actions</th>
-          </tr>
-        </thead>
-        <tbody>
-          {% for todo in alltodo %}
-          <tr>
-            <th scope="row">{{ (page - 1) * todos_per_page + loop.index }}</th>
-            <td>{{ todo.title }}</td>
-            <td>{{ todo.desc }}</td>
-            <td>{{ todo.date_created }}</td>
-            <td>
-              {% if todo.file %}
-              <a href="{{ url_for('uploaded_file', filename=todo.file) }}" target="_blank" class="btn btn-outline-primary">View</button>
-              {% else %}
-              <button class="btn btn-outline-primary" disabled>No Img</button>
-              {% endif %}
-              <td>
-                <a href="/update/{{ todo.sNo }}" class="btn btn-primary mx-2">Update</a>
-                <a href="/delete/{{ todo.sNo }}" class="btn btn-danger mx-2">Delete</a>
-            </td>
-          </tr>
-          {% endfor %}
-        </tbody>
-      </table>
-      {% endif %}
+    <div class="mb-3">
+      <label for="file" class="form-label">Upload File (Optional)</label><input type="file" class="form-control"
+        id="file" name="file"></label>
     </div>
+    <button type="submit" class="btn btn-primary">Submit</button>
+  </form>
+</div>
+<div class="container mt-5">
+  <h2>Todo Card</h2>
+  {% if alltodo|length == 0 %}
+  <div class="alert alert-info" role="alert">
+    No tasks added yet. Add a new task above!
+  </div>
+  {% else %}
+  <table class="table">
+    <thead>
+      <tr>
+        <th scope="col">Sno</th>
+        <th scope="col">Title</th>
+        <th scope="col">Description</th>
+        <th scope="col">Date/Time</th>
+        <th scope="col">Images</th>
+        <th scope="col" class="text-left" style="padding-left: 50px; padding-right: 20px;">Actions</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for todo in alltodo %}
+      <tr>
+        <th scope="row">{{ (page - 1) * todos_per_page + loop.index }}</th>
+        <td>{{ todo.title }}</td>
+        <td>{{ todo.desc }}</td>
+        <td>{{ todo.date_created }}</td>
+        <td>
+          {% if todo.file %}
+          <a href="{{ url_for('uploaded_file', filename=todo.file) }}" target="_blank"
+            class="btn btn-outline-primary">View</button>
+            {% else %}
+            <button class="btn btn-outline-primary" disabled>No Img</button>
+            {% endif %}
+        <td>
+          <a href="/update/{{ todo.sNo }}" class="btn btn-primary mx-2">Update</a>
+          <a href="/delete/{{ todo.sNo }}" class="btn btn-danger mx-2">Delete</a>
+        </td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+  {% endif %}
+</div>
 
-    <div class="pagination d-flex justify-content-center">
-      {% if has_previous %}
-          <a href="{{ url_for('todos', page=page - 1) }}" class="btn btn-primary mx-2">Previous</a>
-      {% else %}
-          <a href="?" class="btn btn-secondary mx-2" disabled>Previous</a>
-      {% endif %}
-      
-      {% if has_next %}
-          <a href="{{ url_for('todos', page=page + 1) }}" class="btn btn-primary mx-2">Next</a>
-      {% else %}
-          <a href="?" class="btn btn-secondary mx-2" disabled>Next</a>
-      {% endif %}
-    </div>
+<div class="pagination d-flex justify-content-center">
+  {% if has_previous %}
+  <a href="{{ url_for('todos', page=page - 1) }}" class="btn btn-primary mx-2">Previous</a>
+  {% else %}
+  <a href="?" class="btn btn-secondary mx-2" disabled>Previous</a>
+  {% endif %}
 
-    <!-- Profile Menu CSS -->
-    <style>
-        .profile-menu {
-          position: relative;
-          display: inline-block;
-        }
+  {% if has_next %}
+  <a href="{{ url_for('todos', page=page + 1) }}" class="btn btn-primary mx-2">Next</a>
+  {% else %}
+  <a href="?" class="btn btn-secondary mx-2" disabled>Next</a>
+  {% endif %}
+</div>
 
-        .profile-btn {
-          background-color: #4CAF50;
-          color: white;
-          padding: 0;
-          border: none;
-          cursor: pointer;
-          border-radius: 50%; /* Makes the button circular */
-        }
-
-        .profile-icon {
-          width: 50px; /* Adjust size */
-          height: 50px; /* Adjust size */
-          border-radius: 50%; /* Makes the image circular */
-          object-fit: cover; /* Ensures the image fits in the circle */
-        }
-
-        .dropdown-content {
-          display: none;
-          position: absolute;
-          background-color: transparent;
-          min-width: 10px;
-          box-shadow: 0px 8px 16px rgba(0, 0, 0, 0.2);
-          z-index: 1;
-          border-radius: 5px;
-        }
-
-        .dropdown-content a {
-          color: black;
-          padding: 6px 12px;
-          text-decoration: none;
-          display: block;
-        }
-
-        .dropdown-content a:hover {
-          background-color: transparent;
-        }
-
-        /* Show the dropdown when the profile button is clicked */
-        .show-dropdown {
-          display: block;
-        }
-    </style>
-
-    <!-- JavaScript to Toggle Dropdown -->
-    <script>
-        function toggleDropdown(event) {
-        var dropdown = document.getElementById('profile-dropdown');
-        dropdown.classList.toggle('show-dropdown');
-        event.stopPropagation(); // Prevents the click event from propagating to the document
-      }
-
-      // Close the dropdown if the user clicks anywhere outside of it
-      document.addEventListener('click', function(event) {
-        var dropdown = document.getElementById('profile-dropdown');
-        var profileMenu = document.querySelector('.profile-icon');
-        if (!profileMenu.contains(event.target)) {
-          dropdown.classList.remove('show-dropdown');
-        }
-      });
-    </script>
-
-    <script
-      src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"
-      integrity="sha384-YvpcrYf0tY3lHB60NNkmXc5s9fDVZLESaAA55NDzOxhy9GkcIdslK1eN7N6jIeHz"
-      crossorigin="anonymous"
-    ></script>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"
+  integrity="sha384-YvpcrYf0tY3lHB60NNkmXc5s9fDVZLESaAA55NDzOxhy9GkcIdslK1eN7N6jIeHz" crossorigin="anonymous"></script>
 
 {% endblock body %}
