@@ -1,24 +1,35 @@
 from flask import  *
 from flask_sqlalchemy import SQLAlchemy
 from datetime import datetime
-from mongo_config import *
-import smtplib
+from config.db_email_config import *
+from config.sentry_intergration import *
 from flasgger import Swagger
-from email.mime.text import MIMEText
-from email.mime.multipart import MIMEMultipart
 from itsdangerous import URLSafeTimedSerializer
+from werkzeug.exceptions import HTTPException
 import random
 from werkzeug.utils import secure_filename
 from utils.auth import hash_password, verify_password
 import re
+from flask_caching import Cache
+from werkzeug.middleware.proxy_fix import ProxyFix
+
+
 
 a = ['a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i', 'j', 'k', 'l', 'm', 'n', 'o', 'p', 'q', 'r', 's', 't', 'u', 'v', 'w', 'x', 'y', 'z']
 
 SECRET_KEY = ''.join(random.choices(a, k=16))
 serializer = URLSafeTimedSerializer(SECRET_KEY)
 
+# config = {
+#     "DEBUG": True,          # some Flask specific configs
+#     "CACHE_TYPE": "SimpleCache",  # Flask-Caching related configs
+#     "CACHE_DEFAULT_TIMEOUT": 300
+# }
+
 app = Flask(__name__)
 swagger = Swagger(app)
+# app.config.from_mapping(config)
+# cache = Cache(app)
 app.config['UPLOAD_FOLDER'] = '/tmp/uploads'
 app.config["SQLALCHEMY_DATABASE_URI"] = "sqlite:///todo.db"
 app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
@@ -42,13 +53,14 @@ class ToDo(db.Model):
 
     def __repr__(self):
         return f"{self.sNo} - {self.title} - {self.desc} - {self.file} -{self.user_id}"
+    
 
 # Create the database tables
 with app.app_context():
     db.create_all()
 
 def generate_reset_token(email):
-    return serializer.dumps(email, salt='password-reset-salt')
+    return serializer.dumpsss(email, salt='password-reset-salt')
 
 def verify_reset_token(token, expiration=600):
     try:
@@ -59,23 +71,6 @@ def verify_reset_token(token, expiration=600):
     
 def allow_image(filename):
     return '.' in filename and filename.rsplit('.', 1)[1].lower() in allowed_image_extension
-
-def send_email(receiver_email, subject, body):
-    try:
-        msg = MIMEMultipart()
-        msg['From'] = EMAIL_ADDRESS
-        msg['To'] = receiver_email
-        msg['Subject'] = subject
-        msg.attach(MIMEText(body, 'plain'))
-
-        with smtplib.SMTP('smtp.gmail.com', 587) as server:
-            server.starttls()
-            server.login(EMAIL_ADDRESS, EMAIL_PASSWORD)
-            server.send_message(msg)
-
-        print(f"Email sent successfully to {receiver_email}")
-    except Exception as e:
-        print(f"Failed to send email: {e}")
 
 @app.route('/')
 def home():
@@ -92,6 +87,7 @@ def page_not_found(e):
     return render_template('404.html')
 
 @app.route('/reset-password/<token>', methods=['GET', 'POST'])
+# @Cache.cached(timeout=600)
 def reset_password(token):
     # Verify the token and extract the email
     email = verify_reset_token(token)
