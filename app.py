@@ -30,7 +30,7 @@ app = Flask(__name__)
 # app.config.from_mapping(config)
 # cache = Cache(app)
 app.config['UPLOAD_FOLDER'] = '/tmp/uploads'
-app.config["SQLALCHEMY_DATABASE_URI"] = "sqlite:///todo.db"
+app.config["SQLALCHEMY_DATABASE_URI"] = os.getenv("DATABASE_URI")
 app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
 app.secret_key = 'super secret key'
 
