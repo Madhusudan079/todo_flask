@@ -3,14 +3,12 @@ from flask_sqlalchemy import SQLAlchemy
 from datetime import datetime
 from config.db_email_config import *
 from config.sentry_intergration import *
-from flasgger import Swagger
 from itsdangerous import URLSafeTimedSerializer
 from werkzeug.exceptions import HTTPException
 import random
 from werkzeug.utils import secure_filename
 from utils.auth import hash_password, verify_password
 import re
-from flask_caching import Cache
 from werkzeug.middleware.proxy_fix import ProxyFix
 
 
@@ -21,13 +19,14 @@ SECRET_KEY = ''.join(random.choices(a, k=16))
 serializer = URLSafeTimedSerializer(SECRET_KEY)
 
 # config = {
-#     "DEBUG": True,          # some Flask specific configs
+#     "DEBUG": True,          # some Flask specific configspython3 -m venv env
+
 #     "CACHE_TYPE": "SimpleCache",  # Flask-Caching related configs
 #     "CACHE_DEFAULT_TIMEOUT": 300
 # }
 
 app = Flask(__name__)
-swagger = Swagger(app)
+# swagger = Swagger(app)
 # app.config.from_mapping(config)
 # cache = Cache(app)
 app.config['UPLOAD_FOLDER'] = '/tmp/uploads'
