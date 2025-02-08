@@ -10,6 +10,7 @@ from werkzeug.utils import secure_filename
 from utils.auth import hash_password, verify_password
 import re
 from werkzeug.middleware.proxy_fix import ProxyFix
+from flask_migrate import Migrate
 
 
 
@@ -18,17 +19,7 @@ a = ['a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i', 'j', 'k', 'l', 'm', 'n', 'o', 
 SECRET_KEY = ''.join(random.choices(a, k=16))
 serializer = URLSafeTimedSerializer(SECRET_KEY)
 
-# config = {
-#     "DEBUG": True,          # some Flask specific configspython3 -m venv env
-
-#     "CACHE_TYPE": "SimpleCache",  # Flask-Caching related configs
-#     "CACHE_DEFAULT_TIMEOUT": 300
-# }
-
 app = Flask(__name__)
-# swagger = Swagger(app)
-# app.config.from_mapping(config)
-# cache = Cache(app)
 app.config['UPLOAD_FOLDER'] = '/tmp/uploads'
 app.config["SQLALCHEMY_DATABASE_URI"] = os.getenv("DATABASE_URI")
 app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
@@ -52,14 +43,6 @@ class ToDo(db.Model):
 
     def __repr__(self):
         return f"{self.sNo} - {self.title} - {self.desc} - {self.file} -{self.user_id}"
-    
-
-# Create the database tables
-# def create_database():
-#     with app.app_context():
-#         db.create_all()
-
-# create_database()
 
 def generate_reset_token(email):
     return serializer.dumps(email, salt='password-reset-salt')
@@ -335,6 +318,4 @@ def update(sNo):
     return render_template('update.html', todo=todo)
 
 if __name__ == "__main__":
-    with app.app_context():
-        db.create_all()
     app.run(debug=True, host='0.0.0.0', port=7878)
