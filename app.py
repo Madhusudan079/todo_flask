@@ -10,6 +10,7 @@ from werkzeug.utils import secure_filename
 from utils.auth import hash_password, verify_password
 import re
 from werkzeug.middleware.proxy_fix import ProxyFix
+from flask_migrate import Migrate
 
 
 
@@ -55,11 +56,14 @@ class ToDo(db.Model):
     
 
 # Create the database tables
-with app.app_context():
-    db.create_all()
+# def create_database():
+#     with app.app_context():
+#         db.create_all()
+
+# create_database()
 
 def generate_reset_token(email):
-    return serializer.dumpsss(email, salt='password-reset-salt')
+    return serializer.dumps(email, salt='password-reset-salt')
 
 def verify_reset_token(token, expiration=600):
     try:
@@ -167,8 +171,8 @@ def about():
 @app.route('/login', methods=['GET', 'POST'])
 def login():
     if request.method == 'POST':
-        email = request.form['email']
-        password = request.form['password']
+        email = request.form.get('email')
+        password = request.form.get('password')
         session['email'] = email 
         
         # Check if user exists
@@ -332,4 +336,4 @@ def update(sNo):
     return render_template('update.html', todo=todo)
 
 if __name__ == "__main__":
-    app.run(debug=True, host = '0.0.0.0', port = 7878)
+    app.run(debug=True, host='0.0.0.0', port=7878)
