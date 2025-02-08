@@ -10,7 +10,6 @@ from werkzeug.utils import secure_filename
 from utils.auth import hash_password, verify_password
 import re
 from werkzeug.middleware.proxy_fix import ProxyFix
-from flask_migrate import Migrate
 
 
 
@@ -336,4 +335,6 @@ def update(sNo):
     return render_template('update.html', todo=todo)
 
 if __name__ == "__main__":
+    with app.app_context():
+        db.create_all()
     app.run(debug=True, host='0.0.0.0', port=7878)
