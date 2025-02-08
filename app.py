@@ -178,6 +178,7 @@ def login():
             print(verify_password)
             session['user'] = email
             flash('Logged in successfully', 'success')
+            print("logged in successfully")
             return redirect('/todos/1')
         
         flash("Invalid email or password", 'error')
