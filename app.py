@@ -18,17 +18,7 @@ a = ['a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i', 'j', 'k', 'l', 'm', 'n', 'o', 
 SECRET_KEY = ''.join(random.choices(a, k=16))
 serializer = URLSafeTimedSerializer(SECRET_KEY)
 
-# config = {
-#     "DEBUG": True,          # some Flask specific configspython3 -m venv env
-
-#     "CACHE_TYPE": "SimpleCache",  # Flask-Caching related configs
-#     "CACHE_DEFAULT_TIMEOUT": 300
-# }
-
 app = Flask(__name__)
-# swagger = Swagger(app)
-# app.config.from_mapping(config)
-# cache = Cache(app)
 app.config['UPLOAD_FOLDER'] = '/tmp/uploads'
 app.config["SQLALCHEMY_DATABASE_URI"] = os.getenv("DATABASE_URI")
 app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
@@ -328,6 +318,6 @@ def update(sNo):
     return render_template('update.html', todo=todo)
 
 if __name__ == "__main__":
-    with app.app_context():
-        db.create_all()
+    # with app.app_context():
+    #     db.create_all()
     app.run(debug=True, host='0.0.0.0', port=7878)
