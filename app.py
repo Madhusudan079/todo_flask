@@ -104,7 +104,7 @@ def forgotpassword():
         user = collection.find_one({'email': email})
         if user:
             token = generate_reset_token(email)
-            send_email(email, 'Password Reset', f"Click the link to reset your password: BASE_URL/reset-password/{token}")
+            send_email(email, 'Password Reset', f"Click the link to reset your password: {BASE_URL}/reset-password/{token}")
             flash('password reset link send to your email', 'success')
             return redirect('/login')
             # return 'Password reset link sent'
