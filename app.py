@@ -10,7 +10,7 @@ from werkzeug.utils import secure_filename
 from utils.auth import hash_password, verify_password
 import re
 from werkzeug.middleware.proxy_fix import ProxyFix
-
+from sqlalchemy.pool import QueuePool
 
 
 a = ['a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i', 'j', 'k', 'l', 'm', 'n', 'o', 'p', 'q', 'r', 's', 't', 'u', 'v', 'w', 'x', 'y', 'z']
