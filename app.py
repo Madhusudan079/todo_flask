@@ -94,6 +94,8 @@ def reset_password(token):
     return render_template('reset_password.html', email=email)
 
 
+BASE_URL = os.getenv("MAIN_URL")
+
 @app.route('/forgot', methods=['GET', 'POST'])
 def forgotpassword():
     if request.method == 'POST':
@@ -102,7 +104,7 @@ def forgotpassword():
         user = collection.find_one({'email': email})
         if user:
             token = generate_reset_token(email)
-            send_email(email, 'Password Reset', f"Click the link to reset your password: https://t31kp2fr-7777.inc1.devtunnels.ms/reset-password/{token}")
+            send_email(email, 'Password Reset', f"Click the link to reset your password: BASE_URL/reset-password/{token}")
             flash('password reset link send to your email', 'success')
             return redirect('/login')
             # return 'Password reset link sent'
