@@ -22,6 +22,12 @@ app = Flask(__name__)
 app.config['UPLOAD_FOLDER'] = '/tmp/uploads'
 app.config["SQLALCHEMY_DATABASE_URI"] = os.getenv("DATABASE_URI")
 app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
+app.config["SQLALCHEMY_ENGINE_OPTIONS"] = {
+    "pool_size": 10,         # Maximum connections in the pool
+    "max_overflow": 20,      # Extra connections when needed
+    "pool_timeout": 30,      # Wait time before throwing an error
+    "pool_recycle": 1800     # Recycle connections after 30 minutes
+}
 app.secret_key = 'super secret key'
 
 db = SQLAlchemy(app)
